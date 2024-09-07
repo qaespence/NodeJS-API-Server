@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node --no-warnings ./node_modules/mocha/bin/mocha 'test/specs/**/*.js'"
+    "test": "node --no-warnings ./node_modules/mocha/bin/mocha 'test/specs/**/*.js' --config ./mocharc.js"
   },
   "repository": {
     "type": "git",
