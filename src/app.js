@@ -15,14 +15,17 @@ app.post('/pet', (req, res) => {
     const data = req.body
 
     if (!data.name || !data.category || !data.status) {
+        console.log("POST: 400 - Bad or missing data")
         return res.status(400).json({ message: 'Bad or missing data' })
     }
 
     if (data.name.length > 100 || data.category.length > 100 || data.status.length > 100) {
+        console.log("POST: 400 - Bad or missing data. Name/Category/Status too long")
         return res.status(400).json({ message: 'Bad or missing data. Name/Category/Status too long' })
     }
 
     if (pets.some(pet => pet.name === data.name && pet.category === data.category)) {
+        console.log("POST: 400 - Pet with the same name and category already exists")
         return res.status(400).json({ message: 'Pet with the same name and category already exists' })
     }
 
@@ -41,7 +44,7 @@ app.post('/pet', (req, res) => {
     } else {
         inventory[data.category]++  // Increment category quantity
     }
-
+    console.log("POST: 201 - Pet created: " + JSON.stringify(newPet))
     res.status(201).json(newPet)
 })
 
@@ -50,9 +53,11 @@ app.get('/pet/:petId', (req, res) => {
     const pet = pets.find(p => p.id === parseInt(req.params.petId))
 
     if (!pet) {
+        console.log("GET: 404 - Pet not found")
         return res.status(404).json({ message: 'Pet not found' })
     }
 
+    console.log("GET 201: Pet fetched: " + JSON.stringify(pet))
     res.status(200).json(pet)
 })
 
@@ -64,10 +69,12 @@ app.put('/pet/:petId', (req, res) => {
     const pet = pets.find(p => p.id === petId)
 
     if (!pet) {
+        console.log("PUT: 404 - Pet not found")
         return res.status(404).json({ message: 'Pet not found' })
     }
 
     if (pets.some(p => p.name === data.name && p.category === data.category && p.id !== petId)) {
+        console.log("PUT: 400 - Pet with the same name and category already exists")
         return res.status(400).json({ message: 'Pet with the same name and category already exists' })
     }
 
@@ -75,12 +82,15 @@ app.put('/pet/:petId', (req, res) => {
     const originalCategory = pet.category
 
     if (data.name && data.name.length > 100) {
+        console.log("PUT: 400 - Bad or missing data. Name too long")
         return res.status(400).json({ message: 'Bad or missing data. Name too long' })
     }
     if (data.category && data.category.length > 100) {
+        console.log("PUT: 400 - Bad or missing data. Category too long")
         return res.status(400).json({ message: 'Bad or missing data. Category too long' })
     }
     if (data.status && data.status.length > 100) {
+        console.log("PUT: 400 - Bad or missing data. Status too long")
         return res.status(400).json({ message: 'Bad or missing data. Status too long' })
     }
 
@@ -106,6 +116,7 @@ app.put('/pet/:petId', (req, res) => {
         }
     }
     
+    console.log("PUT: 200 - Pet updated: " + JSON.stringify(pet))
     res.status(200).json(pet)
 })
 
@@ -115,19 +126,21 @@ app.delete('/pet/:petId', (req, res) => {
     const petIndex = pets.findIndex(p => p.id === petId)
 
     if (petIndex === -1) {
+        console.log("DELETE: 404 - Pet not found")
         return res.status(404).json({ message: 'Pet not found' })
+    }
+
+    // Update inventory
+    if (inventory[pets[petIndex].category]) {
+        inventory[pets[petIndex].category]--
+        if (inventory[pets[petIndex].category] <= 0) {
+            delete inventory[pets[petIndex].category]  // Remove category if quantity is 0
+        }
     }
 
     pets.splice(petIndex, 1)
 
-    // Update inventory
-    if (inventory[pet.category]) {
-        inventory[pet.category]--
-        if (inventory[pet.category] <= 0) {
-            delete inventory[pet.category]  // Remove category if quantity is 0
-        }
-    }
-
+    console.log("DELETE: 404 - Pet deleted")
     res.status(204).json({ message: 'Pet deleted' })
 })
 
