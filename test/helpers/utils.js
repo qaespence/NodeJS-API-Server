@@ -2,6 +2,8 @@
 const fs = require('fs')
 const path = require('path')
 const { faker } = require('@faker-js/faker')
+const { flatten } = require('safe-flat')
+const exp = require('constants')
 
 const logsDir = path.join(__dirname, '../logs')
 
@@ -266,6 +268,19 @@ function apiDebugger(apiResponse) {
     console.log("\nRaw JSON Body: ", JSON.stringify(apiResponse.body))
     console.log("\nRaw Headers: ",  JSON.stringify(apiResponse.header))
     console.log("\nRaw Text Body: ", apiResponse.text)
+    // log payload schema
+    const flattenedBody = flatten(apiResponse.body)
+    let results = {}
+    Object.keys(flattenedBody).forEach(key => {
+        results[key] = typeof flattenedBody[key]
+      })
+    console.log("\nPayload schema: ", JSON.stringify(results, null, 2))
+    // log headers schema
+    results = {}
+    Object.keys(apiResponse.header).forEach(key => {
+        results[key] = typeof apiResponse.header[key]
+      })
+    console.log("\nHeader schema: ", JSON.stringify(results, null, 2))
     console.log("\nEND API DEBUGGER\n\n")
 }
 
@@ -284,6 +299,102 @@ function stringGen(length) {
     return text
 }
 
+/**
+ * Performs a schema verification on the API response, checking the response body and headers.
+ *
+ * @param {string} service - The API group/service.
+ * @param {string} endpoint - The API endpoint.
+ * @param {string} method - The API method.
+ * @param {Object} [responseBody=undefined] - The API response body object.
+ * @param {Object} [responseHeaders=undefined] - The API response headers object.
+ * @param {boolean} [payloadMustMatch=false] - Set to true if the API response body must match the schema DB exactly.
+ * @param {boolean} [headersMustMatch=false] - Set to true if the API response headers must match the schema DB exactly.
+ * @returns {string} A string with the result of the verification checks.
+ */
+function schemaValidation(service, endpoint, method,
+    responseBody = undefined, responseHeaders = undefined,
+    payloadMustMatch = false, headersMustMatch = false) {
+
+    const apiSchemaDB = require('../api/schemaDB.json')
+    let results = []
+    let payloadMismatchValues = []
+
+    if (responseBody !== undefined) {
+        // flatten actual payload
+        const flattenedActual = flatten(responseBody)
+        const expectedPayload = apiSchemaDB[service][endpoint][method]["body"]
+    
+        Object.keys(expectedPayload).forEach((element) => {
+            if (flattenedActual.hasOwnProperty(element)) {
+                let actualType = typeof(flattenedActual[element])
+                let expectedType = expectedPayload[element]
+                if (actualType !== expectedType) {
+                    results.push(`(BODY) Element > ${element} < expected to be > ${expectedType} < but actually > ${actualType} <\n`)
+                }
+            } else {
+                results.push(`(BODY) Element > ${element} < missing from schema\n`)
+            }
+        })
+            
+        if (payloadMustMatch === true && responseBody !== undefined) {
+            const expectedPayload = apiSchemaDB[service][endpoint][method]["body"]
+            const flattenedActual = flatten(responseBody)
+            for (let key in flattenedActual) {
+                if (!expectedPayload.hasOwnProperty(key)) {
+                    console.log("DEBUG::: ", key)
+                    results.push(
+                        "Key      : " + key +
+                        "\nTest     : " + "MISSING" +
+                        "\nExpected : " + "Element present" +
+                        "\nActual   : " + "Element in payload but not in schema DB \n\n"
+                    )
+                }
+            }
+        }
+    }
+
+    if (responseHeaders !== undefined) {
+        // flatten actual headers
+        const flattenedActual = flatten(responseHeaders)
+        const expectedPayload = apiSchemaDB[service][endpoint][method]["headers"]
+    
+        Object.keys(expectedPayload).forEach((element) => {
+            if (flattenedActual.hasOwnProperty(element)) {
+                let actualType = typeof(flattenedActual[element])
+                let expectedType = expectedPayload[element]
+                if (actualType !== expectedType) {
+                    results.push(`(HEADERS) Element > ${element} < expected to be > ${expectedType} < but actually > ${actualType} <\n`)
+                }
+            } else {
+                results.push(`(HEADERS) Element > ${element} < missing from schema\n`)
+            }
+        })
+
+        if (headersMustMatch === true && responseHeaders !== undefined) {
+            const expectedPayload = apiSchemaDB[service][endpoint][method]["headers"]
+            const flattenedActual = flatten(responseHeaders)
+            for (let key in flattenedActual) {
+                if (!expectedPayload.hasOwnProperty(key)) {
+                    results.push(
+                        "Key      : " + key +
+                        "\nTest     : " + "MISSING" +
+                        "\nExpected : " + "Element present" +
+                        "\nActual   : " + "Element in payload but not in schema DB \n\n"
+                    )
+                }
+            }
+        }
+    }
+
+    if (results.length !== 0) {
+        payloadMismatchValues = `\n${results.join("")}\nThere are ${results.length}} mismatches!\n`
+    } else {
+        payloadMismatchValues = "No mismatch values"
+    }
+
+    return payloadMismatchValues
+}
+
 module.exports = {
     logApiToFile : logApiToFile,
     logMessageToFile : logMessageToFile,
@@ -293,5 +404,6 @@ module.exports = {
     multiPointVerification : multiPointVerification,
     sleep : sleep,
     apiDebugger : apiDebugger,
-    stringGen : stringGen
+    stringGen : stringGen,
+    schemaValidation : schemaValidation
 }
