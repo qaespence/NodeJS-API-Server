@@ -1,0 +1,62 @@
+{
+    "pet": {
+        "/pet/:pet_id": {
+            "POST": {
+                "body": {
+                    "id": "number",
+                    "name": "string",
+                    "category": "string",
+                    "status": "string"
+                },
+                "headers": {
+                    "x-powered-by": "string",
+                    "content-type": "string",
+                    "content-length": "string",
+                    "etag": "string",
+                    "date": "string",
+                    "connection": "string"
+                }
+            },
+            "GET": {
+                "body": {
+                    "id": "number",
+                    "name": "string",
+                    "category": "string",
+                    "status": "string"
+                },
+                "headers": {
+                    "x-powered-by": "string",
+                    "content-type": "string",
+                    "content-length": "string",
+                    "etag": "string",
+                    "date": "string",
+                    "connection": "string"
+                }
+            },
+            "PUT": {
+                "body": {
+                    "id": "number",
+                    "name": "string",
+                    "category": "string",
+                    "status": "string"
+                },
+                "headers": {
+                    "x-powered-by": "string",
+                    "content-type": "string",
+                    "content-length": "string",
+                    "etag": "string",
+                    "date": "string",
+                    "connection": "string"
+                }
+            },
+            "DELETE": {
+                "headers": {
+                    "x-powered-by": "string",
+                    "etag": "string",
+                    "date": "string",
+                    "connection": "string"
+                }
+            }
+        }
+    }
+}

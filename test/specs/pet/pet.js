@@ -39,6 +39,16 @@ describe("Pet API Tests", () => {
         await expect(testResults, "Verify test results").to.equal("No mismatch values")
     })
 
+    it("Test pet create schema", async() => {
+        let petData = await utils.generateRandomPet()
+        const addPetResponse = await petApi.addPet(petData.name, petData.category, petData.status)
+        petsToDelete.push(addPetResponse.body.id)
+
+        const testResults = utils.schemaValidation("pet", "/pet/:pet_id", "POST",
+            addPetResponse.body, addPetResponse.header, true, true)
+        await expect(testResults, "Verify test results").to.equal("No mismatch values")
+    })
+
     it("Test pet create - missing name", async() => {
         let petData = await utils.generateRandomPet()
         const addPetResponse = await petApi.addPet(undefined, petData.category, petData.status)
@@ -165,6 +175,18 @@ describe("Pet API Tests", () => {
     
         await expect(testResults, "Verify test results").to.equal("No mismatch values")
     })
+
+    it("Test get pet schema", async() => {
+        let petData = await utils.generateRandomPet()
+        const addPetResponse = await petApi.addPet(petData.name, petData.category, petData.status)
+        petsToDelete.push(addPetResponse.body.id)
+    
+        const getPetResponse = await petApi.getPet(addPetResponse.body.id)
+    
+        const testResults = utils.schemaValidation("pet", "/pet/:pet_id", "GET",
+            getPetResponse.body, getPetResponse.header, true, true)
+        await expect(testResults, "Verify test results").to.equal("No mismatch values")
+    })
     
     it("Test get non-existent pet by ID (0)", async() => {
         const getPetResponse = await petApi.getPet(0)
@@ -238,6 +260,19 @@ describe("Pet API Tests", () => {
             undefined, 
             [`"name":"${updatedPetData.name}"`, `"category":"${updatedPetData.category}"`, `"status":"${updatedPetData.status}"`])
     
+        await expect(testResults, "Verify test results").to.equal("No mismatch values")
+    })
+
+    it("Test update pet schema", async() => {
+        let petData = await utils.generateRandomPet()
+        const addPetResponse = await petApi.addPet(petData.name, petData.category, petData.status)
+        petsToDelete.push(addPetResponse.body.id)
+    
+        let updatedPetData = await utils.generateRandomPet()
+        const updatePetResponse = await petApi.updatePet(addPetResponse.body.id, updatedPetData.name, updatedPetData.category, updatedPetData.status)
+        
+        const testResults = utils.schemaValidation("pet", "/pet/:pet_id", "PUT",
+            updatePetResponse.body, updatePetResponse.header, true, true)
         await expect(testResults, "Verify test results").to.equal("No mismatch values")
     })
 
@@ -366,6 +401,18 @@ describe("Pet API Tests", () => {
             204, undefined, undefined, ['"x-powered-by":"Express"'], 
             undefined, undefined)
     
+        await expect(testResults, "Verify test results").to.equal("No mismatch values")
+    })
+
+    it("Test delete pet schema", async() => {
+        let petData = await utils.generateRandomPet()
+        const addPetResponse = await petApi.addPet(petData.name, petData.category, petData.status)
+        petsToDelete.push(addPetResponse.body.id)
+    
+        const deletePetResponse = await petApi.deletePet(addPetResponse.body.id)
+    
+        const testResults = utils.schemaValidation("pet", "/pet/:pet_id", "DELETE",
+            undefined, deletePetResponse.header, false, true)
         await expect(testResults, "Verify test results").to.equal("No mismatch values")
     })
 
