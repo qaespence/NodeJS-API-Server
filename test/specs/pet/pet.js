@@ -468,4 +468,167 @@ describe("Pet API Tests", () => {
         await expect(testResults, "Verify test results").to.equal("No mismatch values")
     })
 
+    //
+    // GET /pet/findPetByStatus
+    //
+
+    it("Test find pets with status 'available'", async function() {
+        // Create a pet with status 'available'
+        let petData = await utils.generateRandomPet("TestAvailable", "dog", "available")
+        const createResponse = await petApi.addPet(petData.name, petData.category, petData.status)
+        petsToDelete.push(createResponse.body.id)
+
+        // Fetch pets by status 'available'
+        const response = await petApi.findPetByStatus("available")
+        const testResults = await utils.multiPointVerification(response, 
+            200, 
+            ['"status":"available"', `"name":"${petData.name}"`], 
+            undefined, 
+            ['"x-powered-by":"Express"', '"content-type":"application/json; charset=utf-8"',
+                '"connection":"close"'])
+        expect(testResults).to.equal("No mismatch values")
+    })
+
+    it("Test find pets with status schema", async function() {
+        // Create a pet with status 'available'
+        let petData = await utils.generateRandomPet("TestAvailable", "dog", "available")
+        const createResponse = await petApi.addPet(petData.name, petData.category, petData.status)
+        petsToDelete.push(createResponse.body.id)
+
+        // Fetch pets by status 'available'
+        const response = await petApi.findPetByStatus("available")
+        
+        const testResults = utils.schemaValidation("pet", "/pet/findByStatus", "GET",
+            response.body, response.header, false, true)
+        await expect(testResults, "Verify test results").to.equal("No mismatch values")
+    })
+
+    it("Test find pets with status 'pending'", async function() {
+        // Create a pet with status 'pending'
+        let petData = await utils.generateRandomPet("TestPending", "cat", "pending")
+        const createResponse = await petApi.addPet(petData.name, petData.category, petData.status)
+        petsToDelete.push(createResponse.body.id)
+
+        // Fetch pets by status 'pending'
+        const response = await petApi.findPetByStatus("pending")
+        const testResults = await utils.multiPointVerification(response, 
+            200, 
+            ['"status":"pending"', `"name":"${petData.name}"`], 
+            undefined, 
+            ['"x-powered-by":"Express"', '"content-type":"application/json; charset=utf-8"',
+                '"connection":"close"'])
+        expect(testResults).to.equal("No mismatch values")
+    })
+
+    it("Test find pets with status 'sold'", async function() {
+        // Create a pet with status 'sold'
+        let petData = await utils.generateRandomPet("TestSold", "bird", "sold")
+        const createResponse = await petApi.addPet(petData.name, petData.category, petData.status)
+        petsToDelete.push(createResponse.body.id)
+
+        // Fetch pets by status 'sold'
+        const response = await petApi.findPetByStatus("sold")
+        const testResults = await utils.multiPointVerification(response, 
+            200, 
+            ['"status":"sold"', `"name":"${petData.name}"`], 
+            undefined, 
+            ['"x-powered-by":"Express"', '"content-type":"application/json; charset=utf-8"',
+                '"connection":"close"'])
+        expect(testResults).to.equal("No mismatch values")
+    })
+
+    it("Test find pets without providing status", async function() {
+        // Create a pet with status 'available' (or any default)
+        let petData = await utils.generateRandomPet("TestDefault", "fish", "available")
+        const createResponse = await petApi.addPet(petData.name, petData.category, petData.status)
+        petsToDelete.push(createResponse.body.id)
+
+        // Fetch pets without providing status
+        const response = await petApi.findPetByStatus()
+        const testResults = await utils.multiPointVerification(response, 
+            400, 
+            ['"message":"Status parameter is missing or invalid"'],  // Updated error message
+            undefined, 
+            ['"x-powered-by":"Express"', '"content-type":"application/json; charset=utf-8"',
+                '"connection":"close"'])
+        expect(testResults).to.equal("No mismatch values")
+    })
+
+    it("Test find multiple pets with status 'available'", async function() {
+        // Create two pets with status 'available'
+        let petData1 = await utils.generateRandomPet("TestAvailable1", "dog", "available")
+        let petData2 = await utils.generateRandomPet("TestAvailable2", "cat", "available")
+        const createResponse1 = await petApi.addPet(petData1.name, petData1.category, petData1.status)
+        const createResponse2 = await petApi.addPet(petData2.name, petData2.category, petData2.status)
+        petsToDelete.push(createResponse1.body.id)
+        petsToDelete.push(createResponse2.body.id)
+
+        // Fetch pets by status 'available'
+        const response = await petApi.findPetByStatus("available")
+        const testResults = await utils.multiPointVerification(response, 
+            200, 
+            ['"status":"available"', `"name":"${petData1.name}"`, `"name":"${petData2.name}"`], 
+            undefined, 
+            ['"x-powered-by":"Express"', '"content-type":"application/json; charset=utf-8"',
+                '"connection":"close"'])
+        expect(testResults).to.equal("No mismatch values")
+        expect(response.body.length).to.be.greaterThan(1)
+    })
+
+    it("Test find pets with invalid status", async function() {
+        const response = await petApi.findPetByStatus("invalid")
+        const testResults = await utils.multiPointVerification(response, 
+            400, 
+            ['"message":"Status parameter is missing or invalid"'],  // Updated error message
+            undefined, 
+            ['"x-powered-by":"Express"', '"content-type":"application/json; charset=utf-8"',
+                '"connection":"close"'])
+        expect(testResults).to.equal("No mismatch values")
+    })
+
+    it("Test find pets with empty status", async function() {
+        const response = await petApi.findPetByStatus("")
+        const testResults = await utils.multiPointVerification(response, 
+            400, 
+            ['"message":"Status parameter is missing or invalid"'],  // Updated error message
+            undefined, 
+            ['"x-powered-by":"Express"', '"content-type":"application/json; charset=utf-8"',
+                '"connection":"close"'])
+        expect(testResults).to.equal("No mismatch values")
+    })
+
+    it("Test find pets with special characters in status", async function() {
+        const response = await petApi.findPetByStatus("!@#$%")
+        const testResults = await utils.multiPointVerification(response, 
+            400, 
+            ['"message":"Status parameter is missing or invalid"'],  // Updated error message
+            undefined, 
+            ['"x-powered-by":"Express"', '"content-type":"application/json; charset=utf-8"',
+                '"connection":"close"'])
+        expect(testResults).to.equal("No mismatch values")
+    })
+
+    it("Test find pets with numeric status", async function() {
+        const response = await petApi.findPetByStatus("1234")
+        const testResults = await utils.multiPointVerification(response, 
+            400, 
+            ['"message":"Status parameter is missing or invalid"'],  // Updated error message
+            undefined, 
+            ['"x-powered-by":"Express"', '"content-type":"application/json; charset=utf-8"',
+                '"connection":"close"'])
+        expect(testResults).to.equal("No mismatch values")
+    })
+
+    it("Test find pets with excessively long status", async function() {
+        const longString = "a".repeat(1000)
+        const response = await petApi.findPetByStatus(longString)
+        const testResults = await utils.multiPointVerification(response, 
+            400, 
+            ['"message":"Status parameter is missing or invalid"'],  // Updated error message
+            undefined, 
+            ['"x-powered-by":"Express"', '"content-type":"application/json; charset=utf-8"',
+                '"connection":"close"'])
+        expect(testResults).to.equal("No mismatch values")
+    })
+
 })

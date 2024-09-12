@@ -57,6 +57,24 @@
                     "connection": "string"
                 }
             }
+        },
+        "/pet/findByStatus": {
+            "GET": {
+                "body": {
+                    "0.id": "number",
+                    "0.name": "string",
+                    "0.category": "string",
+                    "0.status": "string"
+                },
+                "headers": {
+                    "x-powered-by": "string",
+                    "content-type": "string",
+                    "content-length": "string",
+                    "etag": "string",
+                    "date": "string",
+                    "connection": "string"
+                }
+            }
         }
     }
 }

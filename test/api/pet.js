@@ -56,9 +56,22 @@ async function deletePet(petID) {
     return await basicRequests.del(`/pet/${petID}`)
 }
 
+/**
+ * Finds the details of one or more pets by status.
+ *
+ * @param {string} [status=undefined] - The status of the pet(s) to find.
+ */
+async function findPetByStatus(status = undefined) {
+    let queryString = ""
+    if (status !== undefined) { queryString = `?status=${status}` }
+    
+    return await basicRequests.get(`/pet/findByStatus${queryString}`)
+}
+
 module.exports = {
     addPet : addPet,
     getPet : getPet,
     updatePet : updatePet,
-    deletePet : deletePet
+    deletePet : deletePet,
+    findPetByStatus : findPetByStatus
 }
