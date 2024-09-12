@@ -48,16 +48,30 @@ app.post('/pet', (req, res) => {
     res.status(201).json(newPet)
 })
 
+// Find pets by status
+app.get('/pet/findByStatus', (req, res) => {
+    const status = req.query.status
+
+    if (!status || !['available', 'pending', 'sold'].includes(status)) {
+        console.log(`GET /pet/findByStatus 400 - Not found ( status = ${status} )`)
+        return res.status(400).json({ message: 'Status parameter is missing or invalid' })
+    }
+
+    const foundPets = pets.filter(pet => pet.status === status)
+    console.log(`GET /pet/findByStatus 200 - Data found ( status = ${status} ), data: `, JSON.stringify(foundPets))
+    res.status(200).json(foundPets)
+})
+
 // Retrieve a pet by ID
 app.get('/pet/:petId', (req, res) => {
     const pet = pets.find(p => p.id === parseInt(req.params.petId))
 
     if (!pet) {
-        console.log("GET/pet/:petId 404 - Pet not found")
+        console.log("GET /pet/:petId 404 - Pet not found")
         return res.status(404).json({ message: 'Pet not found' })
     }
 
-    console.log("GET/pet/:petId 201 Pet fetched: " + JSON.stringify(pet))
+    console.log("GET /pet/:petId 201 Pet fetched: " + JSON.stringify(pet))
     res.status(200).json(pet)
 })
 
@@ -142,18 +156,6 @@ app.delete('/pet/:petId', (req, res) => {
 
     console.log("DELETE /pet/:petId 204 - Pet deleted")
     res.status(204).json({ message: 'Pet deleted' })
-})
-
-// Find pets by status
-app.get('/pet/findByStatus', (req, res) => {
-    const status = req.query.status
-
-    if (!status || !['available', 'pending', 'sold'].includes(status)) {
-        return res.status(400).json({ message: 'Status parameter is missing or invalid' })
-    }
-
-    const foundPets = pets.filter(pet => pet.status === status)
-    res.status(200).json(foundPets)
 })
 
 // Upload an image for a pet (dummy implementation)

@@ -341,7 +341,6 @@ function schemaValidation(service, endpoint, method,
             const flattenedActual = flatten(responseBody)
             for (let key in flattenedActual) {
                 if (!expectedPayload.hasOwnProperty(key)) {
-                    console.log("DEBUG::: ", key)
                     results.push(
                         "Key      : " + key +
                         "\nTest     : " + "MISSING" +
