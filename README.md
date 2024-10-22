@@ -88,3 +88,7 @@ Here’s a description of the project’s folder and file structure:
 ├── package.json                # Project dependencies and scripts
 └── README.md                   # Project instructions and documentation
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
